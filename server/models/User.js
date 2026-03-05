@@ -1,12 +1,10 @@
-import express from "express";
 import mongoose from "mongoose";
 
-// Define User schema
 const userSchema = new mongoose.Schema(
   {
-    id: { type: String, required: true },
+    _id: { type: String, required: true }, // Use Clerk's user ID as the MongoDB _id
     name: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     imageUrl: { type: String, required: true },
     enrolledCourses: [
       {
@@ -15,9 +13,10 @@ const userSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 );
 
 const User = mongoose.model("User", userSchema);
-
 export default User;

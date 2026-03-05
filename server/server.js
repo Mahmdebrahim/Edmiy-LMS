@@ -1,33 +1,35 @@
 import express from "express";
 import cors from "cors";
 import connectDB from "./configs/mongodb.js";
+import { connectCloudinary } from "./configs/cloudinary.js";
 import "dotenv/config";
-
 import { clerkWebhooks } from "./controllers/webhooks.js";
 import { clerkMiddleware } from "@clerk/express";
-
 import educatorRoutes from "./routes/educatorRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
 
-//** Init exprss app
 const app = express();
 
-//** connect DB
 await connectDB();
+await connectCloudinary();
 
-//** Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
+app.post("/clerk", express.raw({ type: "*/*" }), clerkWebhooks);
+
+// ✅ باقي الـ routes بعد كده
 app.use(express.json());
-app.use(clerkMiddleware())
+app.use(express.urlencoded({ extended: true }));
+app.use(clerkMiddleware());
 
-//** Routes
-app.get("/", (req, res) => {
-  res.send("Hello Api!");
-});
-app.post("/clerk", clerkWebhooks);
+app.get("/", (req, res) => res.send("Hello Api!"));
 app.use("/api/educator", educatorRoutes);
+app.use("/api/course", courseRoutes);
 
-//** Listen
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
