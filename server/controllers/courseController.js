@@ -2,9 +2,6 @@ import Course from "../models/Course.js";
 
 // Get All Courses
 const getAllCourses = async (req, res) => {
-    console.log("[getAllCourses] Request received");
-    console.log("req.user →", req.user); 
-    console.log("req.userId / req.auth →", req.userId || req.auth);
   try {
     const courses = await Course.find({ isPublished: true })
       .select(["-courseContent", "-enrolledStudents"])
@@ -44,5 +41,6 @@ const getCourseById = async (req, res) => {
   }
 };
 
-export { getAllCourses, getCourseById };
 
+
+export { getAllCourses, getCourseById };

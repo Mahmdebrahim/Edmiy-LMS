@@ -3,11 +3,11 @@ import cors from "cors";
 import connectDB from "./configs/mongodb.js";
 import { connectCloudinary } from "./configs/cloudinary.js";
 import "dotenv/config";
-import { clerkWebhooks } from "./controllers/webhooks.js";
+import { clerkWebhooks,stripeWebhooks } from "./controllers/webhooks.js";
 import { clerkMiddleware } from "@clerk/express";
 import educatorRoutes from "./routes/educatorRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
-
+import userRoutes from "./routes/userRoutes.js";
 const app = express();
 
 await connectDB();
@@ -30,6 +30,7 @@ app.use(clerkMiddleware());
 app.get("/", (req, res) => res.send("Hello Api!"));
 app.use("/api/educator", educatorRoutes);
 app.use("/api/course", courseRoutes);
-
+app.use("/api/user", userRoutes);
+app.post("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
