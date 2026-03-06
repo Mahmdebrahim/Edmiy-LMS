@@ -85,10 +85,16 @@ export const stripeWebhooks = async (req, res) => {
   switch (event.type) {
     // ✅ الدفع نجح
     case "checkout.session.completed": {
+      console.log("✅ checkout.session.completed received");
       const session = event.data.object; // ← مباشرة من الـ event
+      console.log("metadata:", session.metadata); // ← شوف فيه purchaseId ولا لأ
       const { purchaseId } = session.metadata;
+       console.log("purchaseId:", purchaseId);
+
 
       const purchaseData = await Purchase.findById(purchaseId);
+      console.log("purchaseData:", purchaseData); // ← شوف لقاه ولا لأ
+      
       const userData = await User.findById(purchaseData.userId);
       const courseData = await Course.findById(
         purchaseData.courseId.toString(),
