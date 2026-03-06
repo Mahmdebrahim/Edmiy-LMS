@@ -83,7 +83,7 @@ export const stripeWebhooks = async (req, res) => {
   }
   // Handle the event
   switch (event.type) {
-    case "checkout.session.succeeded": {
+    case "payment_intent.succeeded": {
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
       const session = await stripeInstance.checkout.sessions.list({
@@ -110,9 +110,9 @@ export const stripeWebhooks = async (req, res) => {
 
       break;
     }
-    
+
     // Handle other event types as needed
-    case "payment_intent.payment_failed": {
+    case "payment_intent.failed": {
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
       const session = await stripeInstance.checkout.sessions.list({

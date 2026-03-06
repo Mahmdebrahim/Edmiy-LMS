@@ -15,11 +15,11 @@ if (!PUBLISHABLE_KEY) {
 }
 
 createRoot(document.getElementById("root")).render(
-  <AppProvider>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl={'/'}>
-      <PrimeReactProvider >
+  <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl={"/"}>
+    <AppProvider>
+      <PrimeReactProvider>
         <App />
       </PrimeReactProvider>
-    </ClerkProvider>
-  </AppProvider>,
+    </AppProvider>
+  </ClerkProvider>
 );

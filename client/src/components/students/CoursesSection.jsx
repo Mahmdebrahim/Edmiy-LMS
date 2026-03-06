@@ -15,7 +15,7 @@ function CoursesSection() {
         <br /> business and wellness, our courses are crafted to deliver results
         .
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 md:px-0 mdmy-16 gap-4 my-10 ">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 md:px-0 md:my-16 gap-2 my-10 ">
         {allCourses.slice(0, 4).map((course, i) => (
           <CourseCard key={i} course={course} />
         ))}

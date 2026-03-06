@@ -83,7 +83,7 @@ const purchaseCourse = async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: `${origin}/loading/my-enrollments`,
+      success_url: `${origin}/my-enrollments`,
       cancel_url: `${origin}/`,
       metadata: {
         purchaseId: purchase._id.toString(),
