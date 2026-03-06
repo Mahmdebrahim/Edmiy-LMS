@@ -23,7 +23,7 @@ app.use(
 app.post("/clerk", express.raw({ type: "*/*" }), clerkWebhooks);
 app.post("/stripe", express.raw({ type: "*/*" }), stripeWebhooks);
 
-// ✅ باقي الـ routes بعد كده
+//routes  
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(clerkMiddleware());
