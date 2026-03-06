@@ -21,7 +21,7 @@ app.use(
 );
 
 app.post("/clerk", express.raw({ type: "*/*" }), clerkWebhooks);
-app.post("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
+app.post("/stripe", express.raw({ type: "*/*" }), stripeWebhooks);
 
 // ✅ باقي الـ routes بعد كده
 app.use(express.json());

@@ -69,32 +69,37 @@ const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 export const stripeWebhooks = async (req, res) => {
   const sig = req.headers["stripe-signature"];
 
+  // ✅ تأكد إن الـ body buffer
+  const rawBody =
+    req.body instanceof Buffer
+      ? req.body
+      : Buffer.from(JSON.stringify(req.body));
+
   let event;
   try {
     event = stripeInstance.webhooks.constructEvent(
-      req.body,
+      rawBody, // ← غير من req.body لـ rawBody
       sig,
       process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (err) {
+    console.log("Webhook Error:", err.message);
     return res
       .status(400)
       .json({ success: false, message: "Invalid signature" });
   }
 
   switch (event.type) {
-    // ✅ الدفع نجح
     case "checkout.session.completed": {
       console.log("✅ checkout.session.completed received");
-      const session = event.data.object; // ← مباشرة من الـ event
-      console.log("metadata:", session.metadata); // ← شوف فيه purchaseId ولا لأ
+      const session = event.data.object;
+      console.log("metadata:", session.metadata);
       const { purchaseId } = session.metadata;
-       console.log("purchaseId:", purchaseId);
-
+      console.log("purchaseId:", purchaseId);
 
       const purchaseData = await Purchase.findById(purchaseId);
-      console.log("purchaseData:", purchaseData); // ← شوف لقاه ولا لأ
-      
+      console.log("purchaseData:", purchaseData);
+
       const userData = await User.findById(purchaseData.userId);
       const courseData = await Course.findById(
         purchaseData.courseId.toString(),
@@ -111,7 +116,6 @@ export const stripeWebhooks = async (req, res) => {
       break;
     }
 
-    // ✅ الدفع فشل
     case "payment_intent.payment_failed": {
       const paymentIntent = event.data.object;
       const sessions = await stripeInstance.checkout.sessions.list({
