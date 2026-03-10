@@ -12,6 +12,8 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.60.0",
     "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-query": "^5.90.21",
+    "axios": "^1.13.6",
     "html-react-parser": "^5.2.17",
     "humanize-duration": "^3.33.2",
     "lucide-react": "^0.564.0",
@@ -24,6 +26,7 @@
     "react-player": "^3.4.0",
     "react-router-dom": "^7.13.0",
     "react-spinners": "^0.17.0",
+    "react-toastify": "^11.0.5",
     "react-youtube": "^10.1.0",
     "tailwindcss": "^4.1.18",
     "uniqid": "^5.4.0"

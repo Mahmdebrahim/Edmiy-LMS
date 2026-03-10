@@ -3,16 +3,16 @@ import User from "../models/User.js";
 import Purchase from "../models/Purchase.js";
 import Stripe from "stripe";
 import Course from "../models/Course.js";
+import Cart from "../models/Cart.js";
+import Coupon from "../models/Coupon.js";
 
 export const clerkWebhooks = async (req, res) => {
   try {
     const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
-    // ✅ req.body هنا Buffer (raw) — ده اللي Svix محتاجه
     const payload = req.body;
     const headers = req.headers;
 
-    // ✅ بنبعت الـ raw buffer مباشرة من غير JSON.stringify
     const verifiedPayload = wh.verify(payload, {
       "svix-id": headers["svix-id"],
       "svix-timestamp": headers["svix-timestamp"],
@@ -69,7 +69,6 @@ const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 export const stripeWebhooks = async (req, res) => {
   const sig = req.headers["stripe-signature"];
 
-  // ✅ تأكد إن الـ body buffer
   const rawBody =
     req.body instanceof Buffer
       ? req.body
@@ -78,7 +77,7 @@ export const stripeWebhooks = async (req, res) => {
   let event;
   try {
     event = stripeInstance.webhooks.constructEvent(
-      rawBody, // ← غير من req.body لـ rawBody
+      rawBody, 
       sig,
       process.env.STRIPE_WEBHOOK_SECRET,
     );
@@ -91,28 +90,69 @@ export const stripeWebhooks = async (req, res) => {
 
   switch (event.type) {
     case "checkout.session.completed": {
-      console.log("✅ checkout.session.completed received");
       const session = event.data.object;
-      console.log("metadata:", session.metadata);
-      const { purchaseId } = session.metadata;
-      console.log("purchaseId:", purchaseId);
+      const { purchaseId, purchaseIds, cartId, couponId, couponIds } =
+        session.metadata;
+      console.log("couponId from metadata:", couponId);
+      // Single course
+      if (purchaseId) {
+        const purchaseData = await Purchase.findById(purchaseId);
+        const userData = await User.findById(purchaseData.userId);
+        const courseData = await Course.findById(
+          purchaseData.courseId.toString(),
+        );
 
-      const purchaseData = await Purchase.findById(purchaseId);
-      console.log("purchaseData:", purchaseData);
+        courseData.enrolledStudents.push(userData);
+        await courseData.save();
+        userData.enrolledCourses.push(courseData._id);
+        await userData.save();
+        purchaseData.status = "completed";
+        await purchaseData.save();
 
-      const userData = await User.findById(purchaseData.userId);
-      const courseData = await Course.findById(
-        purchaseData.courseId.toString(),
-      );
+        // Increment coupon usage
+        if (couponId && couponId !== "") {
+          await Coupon.findByIdAndUpdate(couponId, { $inc: { usedCount: 1 } });
+        }
+      }
 
-      courseData.enrolledStudents.push(userData);
-      await courseData.save();
+      // Cart
+      if (purchaseIds) {
+        const ids = purchaseIds.split(",");
+        const couponIdsList = couponIds ? couponIds.split(",") : [];
 
-      userData.enrolledCourses.push(courseData._id);
-      await userData.save();
+        await Promise.all(
+          ids.map(async (id, index) => {
+            const purchaseData = await Purchase.findById(id);
+            if (!purchaseData) return;
 
-      purchaseData.status = "completed";
-      await purchaseData.save();
+            const userData = await User.findById(purchaseData.userId);
+            const courseData = await Course.findById(
+              purchaseData.courseId.toString(),
+            );
+
+            if (!userData.enrolledCourses.includes(courseData._id)) {
+              userData.enrolledCourses.push(courseData._id);
+              await userData.save();
+            }
+            if (!courseData.enrolledStudents.includes(userData._id)) {
+              courseData.enrolledStudents.push(userData._id);
+              await courseData.save();
+            }
+
+            purchaseData.status = "completed";
+            await purchaseData.save();
+
+            // Increment coupon usage for each course
+            const cId = couponIdsList[index];
+            if (cId) {
+              await Coupon.findByIdAndUpdate(cId, { $inc: { usedCount: 1 } });
+            }
+          }),
+        );
+
+        if (cartId) await Cart.findByIdAndDelete(cartId);
+      }
+
       break;
     }
 

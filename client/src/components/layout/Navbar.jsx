@@ -11,15 +11,17 @@ const Navbar = ({ children }) => {
   const { user } = useUser();
   // console.log(user)
   const isEdu = useMatch("/educator/*");
-  const isCourseListPage = useMatch("/course-list/*");
+  const isCourseDetails = useMatch("/course/:courseId");
+  const isHome = useMatch("/");
 
   const [open, setOpen] = React.useState(false);
   // console.log(children);
   return (
-    <nav className={`flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-gray-300 relative transition-all ${isCourseListPage ? "bg-white" : " bg-blue-300/50"}`}>
+    <nav
+      className={`flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-gray-300 relative transition-none ${isCourseDetails || isHome ? "bg-blue-300/50" : "bg-white"}`}
+    >
       {/* Logo */}
       <Link to="/">
-        {/* غيرت لـ Link لو internal */}
         <img
           src={assets.logo}
           alt=""
@@ -42,7 +44,13 @@ const Navbar = ({ children }) => {
         )}
       </div>
       <div className="sm:hidden flex items-center gap-4">
-        {user ? <UserButton /> : <button onClick={() => openSignIn()}><img src={assets.user_icon} alt="" /></button>}
+        {user ? (
+          <UserButton />
+        ) : (
+          <button onClick={() => openSignIn()}>
+            <img src={assets.user_icon} alt="" />
+          </button>
+        )}
         <button
           onClick={() => (open ? setOpen(false) : setOpen(true))}
           aria-label="Menu"

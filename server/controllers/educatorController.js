@@ -18,7 +18,12 @@ const updateRoleToEductor = async (req, res) => {
       publicMetadata: { role: "educator" },
     });
 
-    res.status(200).json({ message: "Role updated to educator successfully" });
+    res
+      .status(200)
+      .json({
+        success: "true",
+        message: "Role updated to educator successfully",
+      });
   } catch (error) {
     res
       .status(500)

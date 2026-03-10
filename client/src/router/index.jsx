@@ -10,6 +10,8 @@ import CourseList from "../pages/students/CourseList";
 import CourseDetails from "../pages/students/CourseDetails";
 import MyEnrollments from "../pages/students/MyEnrollments";
 import Player from "../pages/students/Player";
+import Wishlist from "../pages/students/Wishlist";
+import Cart from "../pages/students/Cart";
 
 import Educator from "../pages/educator/Educator";
 import EduLayout from "../pages/educator/EduLayout";
@@ -34,11 +36,17 @@ const router = createBrowserRouter(
         <Route path="/course/:id" element={<CourseDetails />} />
         <Route path="/my-enrollments" element={<MyEnrollments />} />
         <Route path="/player/:id" element={<Player />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/cart" element={<Cart />} />
       </Route>
 
       {/* Educator Layout */}
-      <Route path="/educator" element={<EduLayout />} errorElement={<Error500/>}>
-        <Route index  element={<Educator />} />
+      <Route
+        path="/educator"
+        element={<EduLayout />}
+        errorElement={<Error500 />}
+      >
+        <Route index element={<Educator />} />
         <Route path="/educator/dashboard" element={<Dashboard />} />
         <Route path="/educator/my-courses" element={<MyCourses />} />
         <Route path="/educator/add-course" element={<AddCourse />} />

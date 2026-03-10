@@ -33,13 +33,6 @@ const courseSchema = new mongoose.Schema(
     courseEducator: { type: String, ref: "User", required: true },
     enrolledStudents: [{ type: String, ref: "User" }],
     courseContent: [chapterSchema],
-    courseRatings: [
-      {
-        userId: { type: String, required: true },
-        rating: { type: Number, required: true, min: 1, max: 5 },
-        comment: { type: String },
-      },
-    ],
   },
   { timestamps: true, minimize: false },
 );

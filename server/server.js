@@ -8,6 +8,8 @@ import { clerkMiddleware } from "@clerk/express";
 import educatorRoutes from "./routes/educatorRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+import couponRoutes from "./routes/couponRoutes.js";
 const app = express();
 
 await connectDB();
@@ -32,5 +34,7 @@ app.get("/", (req, res) => res.send("Hello Api!"));
 app.use("/api/educator", educatorRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/review", reviewRoutes);
+app.use("/api/coupon", couponRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
