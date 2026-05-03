@@ -123,10 +123,10 @@ export const stripeWebhooks = async (req, res) => {
            const updatedCoupon = await Coupon.findOneAndUpdate(
              {
                _id: purchaseData.couponId,
-               $expr: { $lt: ["$usedCount", "$maxUses"] }, // ✅
+               $expr: { $lt: ["$usedCount", "$maxUses"] }, 
              },
              { $inc: { usedCount: 1 } },
-             { new: true },
+             { returnDocument: "after" },
            );
 
           if (!updatedCoupon) {
@@ -153,7 +153,6 @@ export const stripeWebhooks = async (req, res) => {
            );
 
            if (userData && courseData) {
-             // ✅ الكوبون الأول قبل أي حاجة
              if (purchaseData.couponId) {
                await Coupon.findOneAndUpdate(
                  {
@@ -161,7 +160,7 @@ export const stripeWebhooks = async (req, res) => {
                    $expr: { $lt: ["$usedCount", "$maxUses"] },
                  },
                  { $inc: { usedCount: 1 } },
-                 { new: true },
+                 { returnDocument: "after" },
                );
              }
 
@@ -175,7 +174,6 @@ export const stripeWebhooks = async (req, res) => {
                await courseData.save();
              }
 
-             // ✅ status في الآخر
              purchaseData.status = "completed";
              await purchaseData.save();
            }
