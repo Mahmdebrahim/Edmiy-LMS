@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Editor } from "primereact/editor";
 import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
@@ -13,43 +13,75 @@ import {
   Eye,
   EyeOff,
   X,
+  ArrowLeft,
+  Save,
 } from "lucide-react";
-import { ClipLoader } from "react-spinners";
+import { ClipLoader, PropagateLoader } from "react-spinners";
 import axiosInstance from "../../config/axios.config";
 import { useQueryClient } from "@tanstack/react-query";
+import useCustomQuery from "../../hooks/useCustomQuery";
+import { useUser } from "@clerk/clerk-react";
 
-
-const emptyLecture = () => ({
+const emptyLecture = (order = 1) => ({
   lectureTitle: "",
   lectureDuration: 0,
   lectureUrl: "",
   isPreviewFree: false,
-  lectureOrder: 1,
+  lectureOrder: order,
 });
 
-const emptyChapter = () => ({
-  chapterOrder: 1,
+const emptyChapter = (order = 1) => ({
+  chapterOrder: order,
   chapterTitle: "",
-  chapterContent: [emptyLecture()],
+  chapterContent: [emptyLecture(1)],
 });
 
-function AddCourse() {
+function EditCourse() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toastRef = useRef(null);
+  const { isLoaded } = useUser();
 
   const [loading, setLoading] = useState(false);
   const [thumbnail, setThumbnail] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
-  const [expandedChapters, setExpandedChapters] = useState({ 0: true });
+  const [expandedChapters, setExpandedChapters] = useState({});
 
   const [courseData, setCourseData] = useState({
     courseTitle: "",
     courseDescription: "",
     coursePrice: 0,
     discount: 0,
-    courseContent: [emptyChapter()],
+    courseContent: [],
   });
+
+  // ── Fetch course ──
+  const { data: editData, isLoading: editLoading } = useCustomQuery({
+    queryKey: ["editCourse", id, "course", "myCourses"],
+    URL: `/api/educator/course/${id}`,
+    options: { enabled: !!id && isLoaded },
+  });
+
+  useEffect(() => {
+    if (editData?.course) {
+      const c = editData.course;
+      setCourseData({
+        courseTitle: c.courseTitle,
+        courseDescription: c.courseDescription,
+        coursePrice: c.coursePrice,
+        discount: c.discount,
+        courseContent: c.courseContent,
+      });
+      setThumbnailPreview(c.courseThumbnail);
+      
+      const expanded = {};
+      c.courseContent.forEach((_, i) => {
+        expanded[i] = true;
+      });
+      setExpandedChapters(expanded);
+    }
+  }, [editData]);
 
   // ── Thumbnail ──
   const handleThumbnail = (e) => {
@@ -60,49 +92,43 @@ function AddCourse() {
   };
 
   // ── Course field ──
-  const updateCourse = (field, value) => {
+  const updateCourse = (field, value) =>
     setCourseData((prev) => ({ ...prev, [field]: value }));
-  };
 
   // ── Chapter ──
   const addChapter = () => {
+    const newIndex = courseData.courseContent.length;
     setCourseData((prev) => ({
       ...prev,
       courseContent: [
         ...prev.courseContent,
-        { ...emptyChapter(), chapterOrder: prev.courseContent.length + 1 },
+        emptyChapter(prev.courseContent.length + 1),
       ],
     }));
-    setExpandedChapters((prev) => ({
-      ...prev,
-      [courseData.courseContent.length]: true,
-    }));
+    setExpandedChapters((prev) => ({ ...prev, [newIndex]: true }));
   };
 
-  const removeChapter = (ci) => {
+  const removeChapter = (ci) =>
     setCourseData((prev) => ({
       ...prev,
       courseContent: prev.courseContent
         .filter((_, i) => i !== ci)
         .map((ch, i) => ({ ...ch, chapterOrder: i + 1 })),
     }));
-  };
 
-  const updateChapter = (ci, field, value) => {
+  const updateChapter = (ci, field, value) =>
     setCourseData((prev) => ({
       ...prev,
       courseContent: prev.courseContent.map((ch, i) =>
         i === ci ? { ...ch, [field]: value } : ch,
       ),
     }));
-  };
 
-  const toggleChapter = (ci) => {
+  const toggleChapter = (ci) =>
     setExpandedChapters((prev) => ({ ...prev, [ci]: !prev[ci] }));
-  };
 
   // ── Lecture ──
-  const addLecture = (ci) => {
+  const addLecture = (ci) =>
     setCourseData((prev) => ({
       ...prev,
       courseContent: prev.courseContent.map((ch, i) =>
@@ -111,18 +137,14 @@ function AddCourse() {
               ...ch,
               chapterContent: [
                 ...ch.chapterContent,
-                {
-                  ...emptyLecture(),
-                  lectureOrder: ch.chapterContent.length + 1,
-                },
+                emptyLecture(ch.chapterContent.length + 1),
               ],
             }
           : ch,
       ),
     }));
-  };
 
-  const removeLecture = (ci, li) => {
+  const removeLecture = (ci, li) =>
     setCourseData((prev) => ({
       ...prev,
       courseContent: prev.courseContent.map((ch, i) =>
@@ -136,9 +158,8 @@ function AddCourse() {
           : ch,
       ),
     }));
-  };
 
-  const updateLecture = (ci, li, field, value) => {
+  const updateLecture = (ci, li, field, value) =>
     setCourseData((prev) => ({
       ...prev,
       courseContent: prev.courseContent.map((ch, i) =>
@@ -152,13 +173,12 @@ function AddCourse() {
           : ch,
       ),
     }));
-  };
 
   // ── Validate ──
   const validate = () => {
     if (!courseData.courseTitle.trim()) return "Course title is required";
     if (!courseData.courseDescription.trim()) return "Description is required";
-    if (!thumbnail) return "Thumbnail is required";
+    if (!thumbnailPreview) return "Thumbnail is required";
     if (courseData.coursePrice <= 0) return "Price must be greater than 0";
     for (const ch of courseData.courseContent) {
       if (!ch.chapterTitle.trim()) return "All chapters must have a title";
@@ -176,7 +196,7 @@ function AddCourse() {
   const handleSubmit = async () => {
     const error = validate();
     if (error) {
-      toastRef.current.show({
+      toastRef.current?.show({
         severity: "warn",
         summary: "Validation",
         detail: error,
@@ -189,31 +209,31 @@ function AddCourse() {
     try {
       const formData = new FormData();
       formData.append("courseData", JSON.stringify(courseData));
-      formData.append("courseImage", thumbnail);
+      if (thumbnail) formData.append("courseImage", thumbnail);
 
-      const { data } = await axiosInstance.post(
-        "/api/educator/add-course",
+      const { data } = await axiosInstance.put(
+        `/api/educator/course/${id}`,
         formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
 
-      if (data.course) {
-        toastRef.current.show({
+      if (data.success) {
+        toastRef.current?.show({
           severity: "success",
           summary: "Success",
-          detail: "Course created successfully!",
+          detail: "Course updated successfully!",
           life: 3000,
         });
         queryClient.invalidateQueries({ queryKey: ["myCourses"] });
+        queryClient.invalidateQueries({ queryKey: ["editCourse", id] });
+        queryClient.invalidateQueries({ queryKey: ["course", id] });
         setTimeout(() => navigate("/educator/my-courses"), 1500);
       }
     } catch (err) {
-      toastRef.current.show({
+      toastRef.current?.show({
         severity: "error",
         summary: "Error",
-        detail: err?.response?.data?.message || "Failed to create course",
+        detail: err?.response?.data?.message || "Failed to update course",
         life: 3000,
       });
     } finally {
@@ -221,18 +241,43 @@ function AddCourse() {
     }
   };
 
+  // ── Loading ──
+  if (editLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <PropagateLoader color="#155dfc" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-12">
       <Toast ref={toastRef} />
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Add New Course</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Fill in the details to create your course.
-          </p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate("/educator/my-courses")}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Edit Course</h1>
+            <p className="text-gray-500 text-sm mt-0.5">
+              Update your course details.
+            </p>
+          </div>
         </div>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors cursor-pointer disabled:opacity-70"
+        >
+          {loading ? <ClipLoader size={16} color="#fff" /> : <Save size={16} />}
+          {loading ? "Saving..." : "Save Changes"}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -243,9 +288,7 @@ function AddCourse() {
             <h2 className="text-base font-semibold text-gray-800 mb-4">
               Basic Information
             </h2>
-
             <div className="space-y-4">
-              {/* Title */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   Course Title <span className="text-red-500">*</span>
@@ -255,21 +298,22 @@ function AddCourse() {
                   placeholder="e.g. Complete JavaScript Course"
                   value={courseData.courseTitle}
                   onChange={(e) => updateCourse("courseTitle", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
-              {/* Price + Discount */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                     Price ($) <span className="text-red-500">*</span>
                   </label>
                   <input
-                    value={courseData.coursePrice}
-                    onChange={(e) => updateCourse("coursePrice", e.target.value)}
                     type="number"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500!"
+                    value={courseData.coursePrice}
+                    onChange={(e) =>
+                      updateCourse("coursePrice", Number(e.target.value))
+                    }
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -277,19 +321,18 @@ function AddCourse() {
                     Discount (%)
                   </label>
                   <input
-                    value={courseData.discount}
-                    onChange={(e) => updateCourse("discount", e.target.value)}
                     type="number"
-                    suffix="%"
+                    value={courseData.discount}
+                    onChange={(e) =>
+                      updateCourse("discount", Number(e.target.value))
+                    }
                     min={0}
                     max={100}
-                    className="w-full"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
 
-              {/* Description */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   Description <span className="text-red-500">*</span>
@@ -307,7 +350,6 @@ function AddCourse() {
 
           {/* Course Content */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-800">
                 Course Content
@@ -323,7 +365,7 @@ function AddCourse() {
             <div className="space-y-3">
               {courseData.courseContent.map((chapter, ci) => (
                 <div
-                  key={chapter.chapterId}
+                  key={ci}
                   className="border border-gray-200 rounded-xl overflow-hidden"
                 >
                   {/* Chapter Header */}
@@ -371,7 +413,7 @@ function AddCourse() {
                     <div className="p-4 space-y-3">
                       {chapter.chapterContent.map((lecture, li) => (
                         <div
-                          key={lecture.lectureId}
+                          key={li}
                           className="bg-gray-50 rounded-xl p-4 space-y-3"
                         >
                           <div className="flex items-center gap-3">
@@ -460,7 +502,7 @@ function AddCourse() {
                                 }
                                 min={0}
                                 suffix=" min"
-                                inputClassName="w-full bg-white px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 h-9.5"
+                                inputClassName="w-full bg-white px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
                               />
                             </div>
                           </div>
@@ -482,22 +524,23 @@ function AddCourse() {
         </div>
 
         {/* Right — Thumbnail + Summary */}
-        <div className="space-y-6 sticky top-6">
+        <div className="space-y-6 xl:sticky xl:top-6">
           {/* Thumbnail */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-base font-semibold text-gray-800 mb-4">
-              Course Thumbnail <span className="text-red-500">*</span>
+              Course Thumbnail
             </h2>
-
             <div
-              onClick={() => document.getElementById("thumbnailInput").click()}
+              onClick={() =>
+                document.getElementById("thumbnailInputEdit").click()
+              }
               className="relative cursor-pointer group"
             >
               {thumbnailPreview ? (
                 <div className="relative">
                   <img
                     src={thumbnailPreview}
-                    alt="thumbnail preview"
+                    alt="thumbnail"
                     className="w-full aspect-video object-cover rounded-xl"
                   />
                   <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -517,12 +560,15 @@ function AddCourse() {
               )}
             </div>
             <input
-              id="thumbnailInput"
+              id="thumbnailInputEdit"
               type="file"
               accept="image/*"
               className="hidden"
               onChange={handleThumbnail}
             />
+            <p className="text-xs text-gray-400 mt-2">
+              Leave empty to keep current thumbnail
+            </p>
           </div>
 
           {/* Summary */}
@@ -563,7 +609,7 @@ function AddCourse() {
               </div>
               <div className="border-t border-gray-100 pt-3 flex justify-between text-gray-800">
                 <span className="font-medium">Final Price</span>
-                <span className="font-bold">
+                <span className="font-bold text-blue-600">
                   $
                   {(
                     courseData.coursePrice -
@@ -574,7 +620,7 @@ function AddCourse() {
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             onClick={handleSubmit}
             disabled={loading}
@@ -583,9 +629,9 @@ function AddCourse() {
             {loading ? (
               <ClipLoader size={16} color="#fff" />
             ) : (
-              <Plus size={16} />
+              <Save size={16} />
             )}
-            {loading ? "Creating..." : "Create Course"}
+            {loading ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
@@ -593,4 +639,4 @@ function AddCourse() {
   );
 }
 
-export default AddCourse;
+export default EditCourse;

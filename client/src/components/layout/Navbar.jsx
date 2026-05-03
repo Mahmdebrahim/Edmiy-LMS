@@ -23,7 +23,7 @@ const Navbar = ({ children }) => {
       {/* Logo */}
       <Link to="/">
         <img
-          src={assets.logo}
+          src={assets.logo2}
           alt=""
           className="w-28 lg:w-32 coursor-pointer"
         />

@@ -1,55 +1,62 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import { useAuth, useUser } from "@clerk/clerk-react";
+import { toast } from "react-toastify";
 import humanizeDuration from "humanize-duration";
 import useCustomQuery from "../hooks/useCustomQuery.js";
 import axiosInstance from "../config/axios.config.js";
-import { toast } from "react-toastify";
-import { useEffect } from "react";
 
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const { user } = useUser();
+  const { isLoaded: authLoaded } = useAuth();
   const [isEducator, setIsEducator] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  // all courses data for both students and educators
   const { data: coursesData, isLoading: coursesLoading } = useCustomQuery({
     queryKey: ["courses"],
     URL: "/api/course/all",
   });
   const allCourses = coursesData?.courses || [];
 
-  // enrolled courses data for students
-  const { data: enrolledCoursesData } = useCustomQuery({
+  const { data: enrolledCoursesData, isLoading: enrolledCoursesLoading } = useCustomQuery({
     queryKey: ["enrolledCourses"],
     URL: "/api/user/enrolled-courses",
-    config: {},
-    options: { enabled: !!user }, // ✅ استنى لحد ما user يكون موجود
+    options: {
+      enabled: !!user && authLoaded,
+    },
   });
-  const enrolledCourses = enrolledCoursesData?.enrolledCourses.reverse() || [];
+  const enrolledCourses = enrolledCoursesData?.enrolledCourses?.reverse() || [];
 
-  // cart data for students
+
+
+  
+
+
   const { data: cartData } = useCustomQuery({
     queryKey: ["cart"],
     URL: "/api/user/cart",
-    options: { enabled: !!user },
+    options: {
+      enabled: !!user && authLoaded,
+    },
   });
   const cartItems = cartData?.items || [];
 
   const fetchUserData = async () => {
     try {
       const { data } = await axiosInstance.get("/api/user/profile");
-      setIsEducator(user.publicMetadata.role === "educator");
-      if (data.success) {
+      setIsEducator(user?.publicMetadata?.role === "educator");
+      if (data?.success) {
         setUserData(data.user);
       }
     } catch (error) {
       console.error("Failed to fetch user data:", error);
+      if (error.response?.status !== 401) {
+        toast.error("Failed to load profile");
+      }
     }
   };
 
-  //helper functions
   const calcAvgRatin = (course) => {
     if (!course.courseRatings?.length) return 0;
     let totalRate = 0;
@@ -86,16 +93,17 @@ export const AppProvider = ({ children }) => {
   const logToken = async () => {
     const token = await window.Clerk?.session?.getToken({
       template: "long-lived",
+      skipCache: true,
     });
     console.log("Clerk Token:", token);
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && authLoaded) {
       fetchUserData();
       logToken();
     }
-  }, [user]);
+  }, [user, authLoaded]);
 
   const value = {
     allCourses,
@@ -109,6 +117,7 @@ export const AppProvider = ({ children }) => {
     setIsEducator,
     userData,
     enrolledCourses,
+    enrolledCoursesLoading,
     cartItems,
     currency: import.meta.env.VITE_CURRENCY || "$",
   };

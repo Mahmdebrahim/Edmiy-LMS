@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { PlayCircle, Lock, Clock, CheckCircle } from "lucide-react";
 import { AppContext } from "../../context/AppContext";
@@ -11,9 +11,15 @@ import { useUser } from "@clerk/clerk-react";
 
 function Player() {
   const { id } = useParams();
-  const { user } = useUser();
-  const { calcCourseDuration, calcChapterTime, calcLecTime, calcLecturesNo } =
-    useContext(AppContext);
+  const { user, isLoaded } = useUser();
+  const {
+    calcCourseDuration,
+    calcChapterTime,
+    calcLecTime,
+    calcLecturesNo,
+    enrolledCourses,
+    enrolledCoursesLoading,
+  } = useContext(AppContext);
   const [playerData, setPlayerData] = useState(null);
 
   const {
@@ -51,7 +57,8 @@ function Player() {
     });
   };
 
-  if (courseLoading) {
+  // ── Loading ──
+  if (!isLoaded || courseLoading || enrolledCoursesLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <PropagateLoader color="#155dfc" />
@@ -59,6 +66,13 @@ function Player() {
     );
   }
 
+  // ── Not enrolled → redirect to course page ──
+  const isEnrolled = enrolledCourses.some((c) => c._id === id || c === id);
+  if (!isEnrolled) {
+    return <Navigate to={`/course/${id}`} replace />;
+  }
+
+  // ── Course not found ──
   if (error || !courseData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -78,7 +92,6 @@ function Player() {
         <div className="flex flex-col xl:flex-row gap-10 items-start">
           {/* Left — Video + Reviews */}
           <div className="flex-1 w-full">
-            {/* Video Player */}
             <div className="w-full">
               {playerData ? (
                 <div className="w-full">
@@ -115,8 +128,6 @@ function Player() {
                 </div>
               )}
             </div>
-
-            {/*  Reviews تحت الفيديو */}
             <div className="mt-8">
               <Ratingg courseId={id} />
             </div>
@@ -137,8 +148,6 @@ function Player() {
                   <span>{calcCourseDuration(courseData)}</span>
                 </div>
               </div>
-
-              {/* Scrollable content */}
               <div className="overflow-y-auto max-h-[70vh]">
                 <Accordion activeIndex={0}>
                   {courseData.courseContent?.map((chapter, i) => (
@@ -150,7 +159,7 @@ function Player() {
                             {chapter.chapterTitle}
                           </span>
                           <span className="text-xs text-gray-500 shrink-0 ml-2">
-                            {chapter.chapterContent?.length || 0} •{" "}
+                            {chapter.chapterContent?.length || 0} lec •{" "}
                             {calcChapterTime(chapter)}
                           </span>
                         </div>
@@ -177,16 +186,15 @@ function Player() {
                                     size={15}
                                     className="text-green-500 shrink-0"
                                   />
-                                ) : playerData?.lectureId ===
-                                  lecture.lectureId ? (
-                                  <PlayCircle
-                                    size={15}
-                                    className="text-blue-600 shrink-0"
-                                  />
                                 ) : (
                                   <PlayCircle
                                     size={15}
-                                    className="text-gray-400 shrink-0"
+                                    className={
+                                      playerData?.lectureId ===
+                                      lecture.lectureId
+                                        ? "text-blue-600 shrink-0"
+                                        : "text-gray-400 shrink-0"
+                                    }
                                   />
                                 )}
                                 <span

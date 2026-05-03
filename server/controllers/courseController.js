@@ -86,14 +86,35 @@ const getCourseById = async (req, res) => {
 
     if (!course) return res.status(404).json({ message: "Course not found" });
 
+    // avgRating + totalReviews
     const reviews = await Review.find({ courseId });
     const avgRating = reviews.length
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : 0;
 
+    let isEnrolled = false;
+    try {
+      const { userId } = req.auth();
+      isEnrolled = userId && course.enrolledStudents.includes(userId);
+    } catch {
+      isEnrolled = false;
+    }
+
+    
+    const courseObj = course.toObject();
+    if (!isEnrolled) {
+      courseObj.courseContent.forEach((chapter) => {
+        chapter.chapterContent.forEach((lecture) => {
+          if (!lecture.isPreviewFree) {
+            lecture.lectureUrl = "";
+          }
+        });
+      });
+    }
+
     res.status(200).json({
       success: true,
-      course: { ...course.toObject(), avgRating, totalReviews: reviews.length },
+      course: { ...courseObj, avgRating, totalReviews: reviews.length },
     });
   } catch (error) {
     res

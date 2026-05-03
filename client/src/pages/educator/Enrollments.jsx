@@ -5,7 +5,7 @@ import { Column } from "primereact/column";
 import { Skeleton } from "primereact/skeleton";
 import { useUser } from "@clerk/clerk-react";
 
-function StudentEnrolled() {
+function Enrollments() {
   const { user, isLoaded } = useUser();
 
   const { data, isLoading } = useCustomQuery({
@@ -14,15 +14,15 @@ function StudentEnrolled() {
     options: { enabled: isLoaded && !!user },
   });
 
-  const allStudents = data?.uniqueStudents || [];
+  const enrollments = data?.enrolledStudents;
 
 
 
   const header = (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <h3 className="text-xl font-semibold text-gray-800">All Students</h3>
+      <h3 className="text-xl font-semibold text-gray-800">Recent Enrollments</h3>
       <span className="text-sm text-gray-500">
-        Total {allStudents.length} students
+        Total {enrollments?.length || 0} enrollments
       </span>
     </div>
   );
@@ -30,9 +30,9 @@ function StudentEnrolled() {
   return (
     <div className="space-y-8 pb-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">All Students</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Enrollments</h1>
         <p className="text-gray-500 text-sm mt-1">
-          View all unique students currently enrolled in your courses.
+          Track all student enrollments across your courses.
         </p>
       </div>
 
@@ -57,18 +57,18 @@ function StudentEnrolled() {
                 style={{ width: "40%" }}
               />
 
-              {/* Courses Count */}
+              {/* Course */}
               <Column
-                header="Courses Enrolled"
+                header="Course"
                 body={() => (
-                  <Skeleton height="1rem" width="80px" className="bg-gray-200" />
+                  <Skeleton height="1rem" width="160px" className="bg-gray-200" />
                 )}
                 style={{ width: "40%" }}
               />
 
               {/* Date */}
               <Column
-                header="First Enrollment"
+                header="Date"
                 body={() => (
                   <Skeleton height="1rem" width="90px" className="bg-gray-200" />
                 )}
@@ -78,12 +78,12 @@ function StudentEnrolled() {
           </div>
         ) : (
           <DataTable
-            value={allStudents}
+            value={enrollments}
           paginator
           rows={10}
           rowsPerPageOptions={[5, 10, 25]}
           header={header}
-          emptyMessage="No students found enrolled in your courses yet."
+          emptyMessage="No enrollments found yet."
           tableStyle={{ minWidth: "50rem" }}
           className="p-datatable-sm"
         >
@@ -108,12 +108,14 @@ function StudentEnrolled() {
             style={{ width: "40%" }}
           />
 
-          {/* Courses Count */}
+          {/* Course */}
           <Column
-            header="Courses Enrolled"
+            header="Course"
             body={(row) => (
               <span className="text-sm text-gray-600 font-medium">
-                {row.coursesCount} {row.coursesCount === 1 ? "course" : "courses"}
+                {row.courseTitle?.length > 40
+                  ? row.courseTitle.substring(0, 40) + "..."
+                  : row.courseTitle}
               </span>
             )}
             style={{ width: "40%" }}
@@ -121,10 +123,10 @@ function StudentEnrolled() {
 
           {/* Date */}
           <Column
-            header="First Enrollment"
+            header="Date"
             body={(row) => (
               <span className="text-sm text-gray-500">
-                {new Date(row.firstEnrollment).toLocaleDateString("en-US", {
+                {new Date(row.purchaseDate).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "short",
                   day: "numeric",
@@ -140,4 +142,4 @@ function StudentEnrolled() {
   );
 }
 
-export default StudentEnrolled;
+export default Enrollments;

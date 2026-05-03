@@ -16,7 +16,6 @@ export default function MyEnrollments() {
   // const { user } = useUser();
   const navigate = useNavigate();
 
-  // ✅ جيب كل الـ progress من الباك
   const { data: progressData, isLoading: progressLoading } = useCustomQuery({
     queryKey: ["allProgress"],
     URL: "/api/user/all-progress",

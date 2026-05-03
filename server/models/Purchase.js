@@ -13,6 +13,11 @@ const PurchaseSchema = new mongoose.Schema(
       required: true,
     },
     amount: { type: Number, required: true },
+    couponId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Coupon",
+      default: null,
+    },
     status: {
       type: String,
       enum: ["pending", "completed", "failed"],
@@ -20,6 +25,15 @@ const PurchaseSchema = new mongoose.Schema(
     },
   },
   { timestamps: true },
+);
+
+// after 1 hour delete pending purchases
+PurchaseSchema.index(
+  { createdAt: 1 },
+  {
+    expireAfterSeconds: 3600,
+    partialFilterExpression: { status: "pending" },
+  },
 );
 
 const Purchase = mongoose.model("Purchase", PurchaseSchema);

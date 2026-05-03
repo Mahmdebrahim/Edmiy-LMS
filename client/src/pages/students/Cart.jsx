@@ -13,10 +13,10 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import useCustomQuery, { useCustomMutation } from "../../hooks/useCustomQuery";
-import CourseCardSkeleton from "../../components/skeletons/CourseCardSkeleton";
+// import CourseCardSkeleton from "../../components/skeletons/CourseCardSkeleton";
 import { useContext } from "react";
 import { AppContext } from "../../context/AppContext";
-import { ClipLoader } from "react-spinners";
+import { ClipLoader, PropagateLoader, MoonLoader } from "react-spinners";
 import { useState } from "react";
 
 export default function Cart() {
@@ -200,6 +200,12 @@ export default function Cart() {
       </p>
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
+        {/* Loading Overlay */}
+        {removing && (
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50">
+            <PropagateLoader color="#155dfc" />
+          </div>
+        )}
         {/* Left — Cart Items */}
         <div className="flex-1 space-y-4">
           <p className="text-sm text-gray-500 mb-4">
@@ -288,7 +294,10 @@ export default function Cart() {
                         )}
                       </div>
                       <button
-                        onClick={() => removeFromCart({ courseId: course._id })}
+                        onClick={() => {
+                          window.scrollTo(0, 0);
+                          removeFromCart({ courseId: course._id });
+                        }}
                         disabled={removing}
                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
                       >

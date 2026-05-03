@@ -263,10 +263,29 @@ function CourseDetails() {
               <button
                 onClick={handleCart}
                 disabled={addingCart}
-                className="flex-1 py-3 rounded-lg font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors cursor-pointer disabled:opacity-70"
+                className="flex flex-1 py-3 rounded-lg font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed items-center justify-center"
               >
                 {addingCart ? (
-                  <ClipLoader size={16} color="#fff" />
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
                 ) : (
                   "Add to Cart"
                 )}
@@ -278,7 +297,26 @@ function CourseDetails() {
               className="p-3 rounded-lg border border-blue-500 text-blue-500 transition-all cursor-pointer"
             >
               {addingToWishlist || removingFromWishlist ? (
-                <ClipLoader size={16} color="#3b82f6" />
+                <svg
+                  className="animate-spin h-4.5 w-4.5 text-blue-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
               ) : (
                 <Heart
                   size={18}
@@ -429,7 +467,26 @@ function CourseDetails() {
                             className="px-4 py-2 text-sm font-medium bg-gray-800 text-white rounded-lg hover:bg-gray-900 disabled:opacity-50 cursor-pointer"
                           >
                             {validatingCoupon ? (
-                              <ClipLoader size={14} color="#fff" />
+                              <svg
+                                className="animate-spin h-5 w-5 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                ></circle>
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                              </svg>
                             ) : (
                               "Apply"
                             )}
@@ -504,7 +561,7 @@ function CourseDetails() {
                             <span className="text-sm text-gray-700">
                               {lecture.lectureTitle}
                             </span>
-                            {lecture.isPreviewFree && (
+                            {lecture.isPreviewFree && lecture.lectureUrl && (
                               <span
                                 onClick={() =>
                                   setPlayedData({
@@ -675,7 +732,9 @@ function CourseDetails() {
                             className="px-4 py-2 text-sm font-medium bg-gray-800 text-white rounded-lg hover:bg-gray-900 disabled:opacity-50 cursor-pointer"
                           >
                             {validatingCoupon ? (
-                              <ClipLoader size={14} color="#fff" />
+                              <div className="w-5 h-5 flex items-center justify-center bg-white shrink-0">
+                                <div className="w-5 h-5 rounded-full border-2 border-y-white border-l-white animate-spin"></div>
+                              </div>
                             ) : (
                               "Apply"
                             )}

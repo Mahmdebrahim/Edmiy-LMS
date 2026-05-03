@@ -8,20 +8,26 @@ const EducatorNavbar = () => {
 
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="flex items-center justify-between px-4 py-3 md:px-8">
-        <Link to="/" className="flex items-center">
-          <img className="h-9" src={assets.logo} alt="Logo" />
-        </Link>
-
+      <div className="flex  justify-end px-4 py-5 md:px-8">
         <div className="flex items-center gap-6 text-gray-600">
           <span className="hidden md:inline">
             Hi!, {user?.firstName || "Educator"}
           </span>
 
           {user ? (
-            <UserButton />
+            user?.imageUrl && (
+              <img
+                src={user.imageUrl}
+                alt={user.firstName}
+                className="w-8 h-8 rounded-full object-cover shrink-0"
+              />
+            )
           ) : (
-            <img className="max-w-8" src={assets.profile_img} alt={EducatorData.name} />
+            <img
+              className="max-w-8"
+              src={assets.profile_img}
+              alt={EducatorData.name}
+            />
           )}
         </div>
       </div>

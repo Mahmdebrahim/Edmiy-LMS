@@ -77,7 +77,7 @@ export const stripeWebhooks = async (req, res) => {
   let event;
   try {
     event = stripeInstance.webhooks.constructEvent(
-      rawBody, 
+      rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET,
     );
@@ -91,67 +91,99 @@ export const stripeWebhooks = async (req, res) => {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object;
-      const { purchaseId, purchaseIds, cartId, couponId, couponIds } =
+      const { purchaseId, purchaseIds, cartId } =
         session.metadata;
-      console.log("couponId from metadata:", couponId);
+
       // Single course
       if (purchaseId) {
         const purchaseData = await Purchase.findById(purchaseId);
+
+        // prevent double processing
+        if (!purchaseData || purchaseData.status === "completed") return;
+
         const userData = await User.findById(purchaseData.userId);
         const courseData = await Course.findById(
           purchaseData.courseId.toString(),
         );
 
-        courseData.enrolledStudents.push(userData);
-        await courseData.save();
-        userData.enrolledCourses.push(courseData._id);
-        await userData.save();
+        if (!courseData.enrolledStudents.includes(userData._id)) {
+          courseData.enrolledStudents.push(userData._id);
+          await courseData.save();
+        }
+
+        if (!userData.enrolledCourses.includes(courseData._id)) {
+          userData.enrolledCourses.push(courseData._id);
+          await userData.save();
+        }
         purchaseData.status = "completed";
         await purchaseData.save();
 
         // Increment coupon usage
-        if (couponId && couponId !== "") {
-          await Coupon.findByIdAndUpdate(couponId, { $inc: { usedCount: 1 } });
+        if (purchaseData.couponId) {
+           const updatedCoupon = await Coupon.findOneAndUpdate(
+             {
+               _id: purchaseData.couponId,
+               $expr: { $lt: ["$usedCount", "$maxUses"] }, // ✅
+             },
+             { $inc: { usedCount: 1 } },
+             { new: true },
+           );
+
+          if (!updatedCoupon) {
+            console.warn(
+              `Coupon race condition detected for ID: ${purchaseData.couponId}`,
+            );
+          }
         }
       }
 
       // Cart
-      if (purchaseIds) {
-        const ids = purchaseIds.split(",");
-        const couponIdsList = couponIds ? couponIds.split(",") : [];
+     if (purchaseIds) {
+       const ids = purchaseIds.split(",");
 
-        await Promise.all(
-          ids.map(async (id, index) => {
-            const purchaseData = await Purchase.findById(id);
-            if (!purchaseData) return;
+       await Promise.all(
+         ids.map(async (id) => {
+           const purchaseData = await Purchase.findById(id);
 
-            const userData = await User.findById(purchaseData.userId);
-            const courseData = await Course.findById(
-              purchaseData.courseId.toString(),
-            );
+           if (!purchaseData || purchaseData.status === "completed") return;
 
-            if (!userData.enrolledCourses.includes(courseData._id)) {
-              userData.enrolledCourses.push(courseData._id);
-              await userData.save();
-            }
-            if (!courseData.enrolledStudents.includes(userData._id)) {
-              courseData.enrolledStudents.push(userData._id);
-              await courseData.save();
-            }
+           const userData = await User.findById(purchaseData.userId);
+           const courseData = await Course.findById(
+             purchaseData.courseId.toString(),
+           );
 
-            purchaseData.status = "completed";
-            await purchaseData.save();
+           if (userData && courseData) {
+             // ✅ الكوبون الأول قبل أي حاجة
+             if (purchaseData.couponId) {
+               await Coupon.findOneAndUpdate(
+                 {
+                   _id: purchaseData.couponId,
+                   $expr: { $lt: ["$usedCount", "$maxUses"] },
+                 },
+                 { $inc: { usedCount: 1 } },
+                 { new: true },
+               );
+             }
 
-            // Increment coupon usage for each course
-            const cId = couponIdsList[index];
-            if (cId) {
-              await Coupon.findByIdAndUpdate(cId, { $inc: { usedCount: 1 } });
-            }
-          }),
-        );
+             if (!userData.enrolledCourses.includes(courseData._id)) {
+               userData.enrolledCourses.push(courseData._id);
+               await userData.save();
+             }
 
-        if (cartId) await Cart.findByIdAndDelete(cartId);
-      }
+             if (!courseData.enrolledStudents.includes(userData._id)) {
+               courseData.enrolledStudents.push(userData._id);
+               await courseData.save();
+             }
+
+             // ✅ status في الآخر
+             purchaseData.status = "completed";
+             await purchaseData.save();
+           }
+         }),
+       );
+
+       if (cartId) await Cart.findByIdAndDelete(cartId);
+     }
 
       break;
     }

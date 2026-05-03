@@ -1,26 +1,25 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import EducatorNavbar from "../../components/educator/EducatorNavbar";
-import { LayoutDashboardIcon, SquarePlus, Album } from "lucide-react";
 import EducatorSidebar from "../../components/layout/sidebar";
 import EduFooter from "../../components/layout/EduFooter";
 
 const EduLayout = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Header */}
-      <EducatorNavbar />
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      <EducatorSidebar />
 
-      {/* Main area with sidebar + content */}
-      <div className="flex flex-1">
-        {/* Sidebar */}
-        <EducatorSidebar />
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <EducatorNavbar />
 
-        {/* Main content */}
-        <main className="flex-1 p-6 md:p-8 bg-white overflow-auto">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto scroll-smooth">
+          <div className=" min-h-full flex flex-col">
+            <div className="flex-1 p-6">
+              <Outlet />
+            </div>
+            <EduFooter />
+          </div>
         </main>
       </div>
-        <EduFooter/>
     </div>
   );
 };

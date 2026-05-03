@@ -5,6 +5,8 @@ import Course from "../models/Course.js";
 import Stripe from "stripe";
 import Cart from "../models/Cart.js";
 import Coupon from "../models/Coupon.js";
+import mongoose from "mongoose";
+
 //* Get User Profile
 const getUserProfile = async (req, res) => {
   try {
@@ -96,6 +98,7 @@ const purchaseCourse = async (req, res) => {
       userId,
       courseId,
       amount: finalPrice,
+      couponId: appliedCoupon?._id || null,
     });
     await purchase.save();
 
@@ -131,7 +134,7 @@ const purchaseCourse = async (req, res) => {
   }
 };
 
-//* Update Your Course Progress (Optional, Can Be Used to Track Which Lectures User Has Watched)
+//* Update Your Course Progress
 const updateCourseProgress = async (req, res) => {
   try {
     const { userId } = await req.auth();
@@ -378,75 +381,102 @@ const removeFromCart = async (req, res) => {
   }
 };
 
-// Checkout Cart — purchase all items
+
+
 const checkoutCart = async (req, res) => {
+  // نبدأ جلسة تعاملات (Transaction)
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { userId } = await req.auth();
     const { origin } = req.headers;
-    // coupons = { courseId: "COUPONCODE", courseId2: "CODE2" }
     const { coupons = {} } = req.body;
 
-    const cart = await Cart.findOne({ userId }).populate("items");
-    if (!cart || cart.items.length === 0)
+    const cart = await Cart.findOne({ userId })
+      .populate("items")
+      .session(session);
+    if (!cart || cart.items.length === 0) {
+      await session.abortTransaction();
       return res.json({ success: false, message: "Cart is empty" });
+    }
 
     const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
     const currency = process.env.CURRENCY?.toLowerCase() || "usd";
 
     const purchaseIds = [];
-    const couponIds = [];
     const line_items = [];
 
-    await Promise.all(
-      cart.items.map(async (course) => {
-        let finalPrice = parseFloat(
-          (
-            course.coursePrice -
-            (course.coursePrice * course.discount) / 100
-          ).toFixed(2),
-        );
+    const calculatePrice = async (course, couponCode) => {
+      let finalPrice = parseFloat(
+        (
+          course.coursePrice -
+          (course.coursePrice * course.discount) / 100
+        ).toFixed(2),
+      );
+      let appliedCouponId = null;
 
-        let appliedCoupon = null;
-        const couponCode = coupons[course._id.toString()];
-
-        if (couponCode) {
-          const coupon = await Coupon.findOne({
-            code: couponCode.toUpperCase(),
-          });
-          if (
-            coupon &&
-            coupon.isActive &&
-            coupon.courseId.toString() === course._id.toString() &&
-            coupon.usedCount < coupon.maxUses &&
-            new Date() <= coupon.expiresAt
-          ) {
-            finalPrice = parseFloat(
-              (finalPrice - (finalPrice * coupon.discount) / 100).toFixed(2),
-            );
-            appliedCoupon = coupon;
-          }
+      if (couponCode) {
+        const coupon = await Coupon.findOne({
+          code: couponCode.toUpperCase(),
+        }).session(session);
+        if (
+          coupon &&
+          coupon.isActive &&
+          coupon.courseId.toString() === course._id.toString() &&
+          coupon.usedCount < coupon.maxUses &&
+          new Date() <= coupon.expiresAt
+        ) {
+          finalPrice = parseFloat(
+            (finalPrice - (finalPrice * coupon.discount) / 100).toFixed(2),
+          );
+          appliedCouponId = coupon._id;
         }
+      }
+      return { finalPrice, appliedCouponId };
+    };
 
-        const purchase = await Purchase.create({
-          userId,
-          courseId: course._id,
-          amount: finalPrice,
-        });
-        purchaseIds.push(purchase._id.toString());
-        couponIds.push(appliedCoupon?._id?.toString() || "");
+    for (const course of cart.items) {
+      const couponCode = coupons[course._id.toString()];
 
-        line_items.push({
-          price_data: {
-            currency,
-            product_data: { name: course.courseTitle },
-            unit_amount: Math.floor(finalPrice * 100),
+      console.log(
+        `[CHECKOUT] Course: ${course._id}, CouponCode: ${couponCode ?? "NONE ❌"}`,
+      );
+
+      const { finalPrice, appliedCouponId } = await calculatePrice(
+        course,
+        couponCode,
+      );
+
+      console.log(
+        `[CHECKOUT] AppliedCouponId: ${appliedCouponId ?? "NULL ❌"}`,
+      );
+
+      const purchase = await Purchase.create(
+        [
+          {
+            userId,
+            courseId: course._id,
+            amount: finalPrice,
+            couponId: appliedCouponId,
           },
-          quantity: 1,
-        });
-      }),
-    );
+        ],
+        { session },
+      );
 
-    const session = await stripeInstance.checkout.sessions.create({
+      purchaseIds.push(purchase[0]._id.toString());
+
+      line_items.push({
+        price_data: {
+          currency,
+          product_data: { name: course.courseTitle },
+          unit_amount: Math.floor(finalPrice * 100),
+        },
+        quantity: 1,
+      });
+    }
+
+    const stripeSession = await stripeInstance.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items,
       mode: "payment",
@@ -454,14 +484,19 @@ const checkoutCart = async (req, res) => {
       cancel_url: `${origin}/cart`,
       metadata: {
         purchaseIds: purchaseIds.join(","),
-        couponIds: couponIds.join(","), // parallel array مع purchaseIds
         cartId: cart._id.toString(),
       },
     });
 
-    res.json({ success: true, checkoutUrl: session.url });
+    await session.commitTransaction();
+    session.endSession();
+
+    res.json({ success: true, checkoutUrl: stripeSession.url });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    await session.abortTransaction();
+    session.endSession();
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

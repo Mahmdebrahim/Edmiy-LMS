@@ -42,10 +42,13 @@ import profile_img from './profile_img.png'
 import profile_img2 from './profile_img2.png'
 import profile_img3 from './profile_img3.png'
 import lesson_icon from './lesson_icon.svg'
-
-
+import logo2 from './logo2.png'
+import logoo from './logoo.png'
+import D_letter from './D_letter.png'
 export const assets = {
+    D_letter,
     logo,
+    logo2,
     search_icon,
     sketch,
     microsoft_logo,
@@ -88,7 +91,8 @@ export const assets = {
     profile_img3,
     play_icon,
     blue_tick_icon,
-    lesson_icon
+    lesson_icon,
+    logoo
 }
 
 export const dummyEducatorData = {

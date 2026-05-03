@@ -4,12 +4,16 @@ import "./index.css";
 import App from "./App.jsx";
 import { AppProvider } from "./context/AppContext.jsx";
 import { ClerkProvider } from "@clerk/clerk-react";
+
 // Import your Publishable Key
 import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+// Add once in your app entry 
+
 
 const queryClient = new QueryClient();
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
