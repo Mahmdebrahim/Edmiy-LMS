@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import useCustomQuery, { useCustomMutation } from "../../hooks/useCustomQuery";
 import { AppContext } from "../../context/AppContext";
 import CourseCard from "../../components/students/CourseCard";
+import CourseCardSkeleton from "../../components/skeletons/CourseCardSkeleton";
 
 export default function Wishlist() {
   const navigate = useNavigate();
