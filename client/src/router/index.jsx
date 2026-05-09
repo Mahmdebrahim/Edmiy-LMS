@@ -11,7 +11,7 @@ import CourseList from "../pages/students/CourseList";
 import CourseDetails from "../pages/students/CourseDetails";
 import MyEnrollments from "../pages/students/MyEnrollments";
 import Player from "../pages/students/Player";
-import Wishlist from "../pages/students/wishlist";
+import Wishlist from "../pages/students/WishList";
 import Cart from "../pages/students/Cart";
 
 import EduLayout from "../pages/educator/EduLayout";
