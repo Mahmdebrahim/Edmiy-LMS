@@ -1,7 +1,7 @@
 import React from 'react'
 import Hero from '../../components/students/Hero'
 
-import Companies from '../../components/students/companies'
+import Companies from '../../components/students/Companies'
 import CoursesSection from '../../components/students/CoursesSection';
 import Testimonials from '../../components/students/Testimonials';
 import CallToAction from '../../components/students/CallToAction';
