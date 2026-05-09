@@ -5,8 +5,7 @@ import { Heart, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import useCustomQuery, { useCustomMutation } from "../../hooks/useCustomQuery";
 import { AppContext } from "../../context/AppContext";
-import CourseCard from "../../components/students/courseCard";
-import CourseCardSkeleton from "../../components/skeletons/CourseCardSkeleton";
+import CourseCard from "../../components/students/CourseCard";
 
 export default function Wishlist() {
   const navigate = useNavigate();

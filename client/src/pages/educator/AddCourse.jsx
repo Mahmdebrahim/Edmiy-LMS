@@ -283,7 +283,6 @@ function AddCourse() {
                     suffix="%"
                     min={0}
                     max={100}
-                    className="w-full"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
