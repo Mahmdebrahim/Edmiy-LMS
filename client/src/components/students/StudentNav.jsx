@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Navbar from "../layout/navbar";
+import Navbar from "../layout/Navbar";
 import { useContext } from "react";
 import { AppContext } from "../../context/AppContext";
 import { toast } from "react-toastify";
