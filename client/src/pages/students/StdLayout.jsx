@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import StudentNavbar from "../../components/students/StudentNav";
-import Footer from "../../components/layout/footer";
+import Footer from "../../components/layout/Footer";
 
 const StudentLayout = () => {
   return (
