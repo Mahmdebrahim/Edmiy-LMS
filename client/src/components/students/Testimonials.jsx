@@ -1,4 +1,4 @@
-const Testmomials = () => {
+const Testimonials = () => {
   const testimonials = [
     {
       text: "PrebuiltUI helped us move faster without sacrificing design quality. The components feel production-ready.",
@@ -162,4 +162,4 @@ const Testmomials = () => {
   );
 };
 
-export default Testmomials;
+export default Testimonials;

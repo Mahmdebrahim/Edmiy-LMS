@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import EducatorNavbar from "../../components/educator/EducatorNavbar";
-import EducatorSidebar from "../../components/layout/sidebar";
+import EducatorSidebar from "../../components/layout/Sidebar";
 import EduFooter from "../../components/layout/EduFooter";
 
 const EduLayout = () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import SearchBar from "../../components/common/searchBar";
+import SearchBar from "../../components/common/SearchBar";
 import { useNavigate, useParams } from "react-router-dom";
-import CourseCard from "../../components/students/courseCard";
+import CourseCard from "../../components/students/CourseCard";
 import CourseCardSkeleton from "../../components/skeletons/CourseCardSkeleton";
 import useCustomQuery from "../../hooks/useCustomQuery";
 import { useDebounce } from "../../hooks/useDebounce";

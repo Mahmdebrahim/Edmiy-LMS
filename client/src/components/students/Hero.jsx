@@ -1,6 +1,6 @@
 import React from "react";
 import { assets } from "../../assets/assets";
-import SearchBar from "../common/searchBar";
+import SearchBar from "../common/SearchBar";
 import { Star } from "lucide-react";
 
 function Hero() {
