@@ -1,5 +1,5 @@
 import React from 'react'
-import Hero from '../../components/students/hero'
+import Hero from '../../components/students/Hero'
 
 import Companies from '../../components/students/companies'
 import CoursesSection from '../../components/students/coursesSection';
