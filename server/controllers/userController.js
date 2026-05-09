@@ -381,10 +381,8 @@ const removeFromCart = async (req, res) => {
   }
 };
 
-
-
+// Checkout Cart
 const checkoutCart = async (req, res) => {
-  // نبدأ جلسة تعاملات (Transaction)
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -439,17 +437,9 @@ const checkoutCart = async (req, res) => {
     for (const course of cart.items) {
       const couponCode = coupons[course._id.toString()];
 
-      console.log(
-        `[CHECKOUT] Course: ${course._id}, CouponCode: ${couponCode ?? "NONE ❌"}`,
-      );
-
       const { finalPrice, appliedCouponId } = await calculatePrice(
         course,
         couponCode,
-      );
-
-      console.log(
-        `[CHECKOUT] AppliedCouponId: ${appliedCouponId ?? "NULL ❌"}`,
       );
 
       const purchase = await Purchase.create(

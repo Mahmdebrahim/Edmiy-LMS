@@ -143,8 +143,8 @@ function Dashboard() {
   const revenueChartOptions = {
     chart: {
       type: "area",
-      toolbar: { show: false },
-      zoom: { enabled: false },
+      toolbar: { show: true },
+      zoom: { enabled: true },
     },
     stroke: { curve: "smooth", width: 3 },
     colors: ["#3b82f6"],
@@ -230,11 +230,13 @@ function Dashboard() {
             Monthly Revenue
           </h3>
           <ReactApexChart
+
             options={revenueChartOptions}
             series={[
               {
                 name: "Revenue",
                 data: d.monthlyRevenue.map((m) => m.revenue),
+
               },
             ]}
             type="area"
@@ -280,6 +282,7 @@ function Dashboard() {
                 },
               ]}
               type="bar"
+
               height={250}
             />
           )}
