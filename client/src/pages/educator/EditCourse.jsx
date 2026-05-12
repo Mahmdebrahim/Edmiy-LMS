@@ -270,14 +270,6 @@ function EditCourse() {
             </p>
           </div>
         </div>
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors cursor-pointer disabled:opacity-70"
-        >
-          {loading ? <ClipLoader size={16} color="#fff" /> : <Save size={16} />}
-          {loading ? "Saving..." : "Save Changes"}
-        </button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

@@ -177,9 +177,9 @@ function CourseDetails() {
         paragraphs: Array.from(doc.querySelectorAll("p"))
           .map((p) => p.textContent.trim())
           .filter(Boolean),
-        listItems: Array.from(doc.querySelectorAll("ul li"))
-          .map((li) => li.textContent.trim())
-          .filter(Boolean),
+        listItems: Array.from(
+          doc.querySelectorAll("ol > li, ul > li"),
+        ).map((li) => li.textContent.trim()),
       };
     } catch {
       return { mainHeading: "", paragraphs: [], listItems: [] };
@@ -538,7 +538,7 @@ function CourseDetails() {
                         <span className="font-semibold text-gray-900">
                           {chapter.chapterTitle}
                         </span>
-                        <span className="text-sm text-gray-500 hidden sm:block">
+                        <span className="text-sm text-gray-500 ">
                           {chapter.chapterContent?.length || 0} lectures •{" "}
                           {calcChapterTime(chapter)}
                         </span>
@@ -549,9 +549,9 @@ function CourseDetails() {
                       {chapter.chapterContent?.map((lecture, idx) => (
                         <div
                           key={lecture.lectureId || idx}
-                          className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors group cursor-pointer"
+                          className="flex flex-wrap items-center justify-between hover:bg-gray-50 rounded-lg transition-colors group cursor-pointer"
                         >
-                          <div className="flex items-center gap-3 flex-1">
+                          <div className="flex items-center gap-3">
                             {lecture.isPreviewFree ? (
                               <PlayCircle size={18} className="text-blue-600" />
                             ) : (
@@ -575,9 +575,9 @@ function CourseDetails() {
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
                             <Clock size={14} />
-                            <span className="hidden sm:block">
+                            <span className="">
                               {calcLecTime(lecture.lectureDuration)}
                             </span>
                           </div>
