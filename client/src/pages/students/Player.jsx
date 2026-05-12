@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { Accordion, AccordionTab } from "primereact/accordion";
-import { PlayCircle, Lock, Clock, CheckCircle } from "lucide-react";
+import { PlayCircle, Lock, Clock, CheckCircle, Loader2 } from "lucide-react";
 import { AppContext } from "../../context/AppContext";
 import { PropagateLoader } from "react-spinners";
 import YouTube from "react-youtube";
@@ -40,7 +40,7 @@ function Player() {
   });
   const completedLectures = progressRes?.courseProgress?.lectureCompleted || [];
 
-  const { mutate: markComplete } = useCustomMutation({
+  const { mutate: markComplete, isPending: markCompleteLoading } = useCustomMutation({
     URL: "/api/user/update-progress",
     invalidateKeys: ["progress", "allProgress"],
   });
@@ -112,10 +112,16 @@ function Player() {
                           : "text-blue-600 hover:text-blue-800"
                       }`}
                     >
-                      <CheckCircle size={16} />
-                      {completedLectures.includes(playerData.lectureId)
-                        ? "Completed"
-                        : "Mark Complete"}
+                      {markCompleteLoading ? (
+                        <Loader2 className="animate-spin" size={16} />
+                      ) : (
+                        <>
+                          <CheckCircle size={16} />
+                          {completedLectures.includes(playerData.lectureId)
+                            ? "Completed"
+                            : "Mark Complete"}
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>

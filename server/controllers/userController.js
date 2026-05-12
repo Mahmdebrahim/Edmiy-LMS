@@ -146,12 +146,16 @@ const updateCourseProgress = async (req, res) => {
       courseProgress = new CourseProgress({
         userId,
         courseId,
-        lectureCompleted: [lectureId],
+        lectureCompleted: [],
       });
     }
 
     if (!courseProgress.lectureCompleted.includes(lectureId)) {
       courseProgress.lectureCompleted.push(lectureId);
+    } else {
+      courseProgress.lectureCompleted = courseProgress.lectureCompleted.filter(
+        (id) => id !== lectureId,
+      );
     }
 
     await courseProgress.save();
