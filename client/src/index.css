@@ -39,9 +39,6 @@
   margin-top: 5px;
 } */
 
-.active{
-
-}
 /* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -110,3 +107,21 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 } */
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollReverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+
+.animate-scroll-reverse {
+  animation: scrollReverse 30s linear infinite;
+}

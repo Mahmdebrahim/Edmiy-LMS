@@ -11,7 +11,7 @@ export default function Footer() {
               <a href="https://prebuiltui.com">
                 <img
                   className="h-8 w-auto"
-                  src={assets.logo_dark}
+                  src={assets.logoo}
                   alt="PrebuiltUI Logo"
                 />
               </a>

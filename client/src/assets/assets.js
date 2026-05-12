@@ -45,7 +45,10 @@ import lesson_icon from './lesson_icon.svg'
 import logo2 from './logo2.png'
 import logoo from './logoo.png'
 import D_letter from './D_letter.png'
+import arrow from './arrow.png'
+
 export const assets = {
+    arrow,
     D_letter,
     logo,
     logo2,

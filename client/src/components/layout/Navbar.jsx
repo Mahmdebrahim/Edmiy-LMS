@@ -1,107 +1,182 @@
-import React from "react";
-import { Link, useMatch } from "react-router-dom"; 
-import {assets} from '../../assets/assets'
+import React, { useState } from "react";
+import { Link, useMatch } from "react-router-dom";
+import { assets } from "../../assets/assets";
+import { useClerk, UserButton, useUser } from "@clerk/clerk-react";
 import {
-  useClerk,
-  UserButton,
-  useUser,
-} from "@clerk/clerk-react";
+  Menu,
+  X,
+  Home,
+  Heart,
+  ShoppingCart,
+  BookOpen,
+  GraduationCap,
+  UserPlus,
+} from "lucide-react";
+
 const Navbar = ({ children }) => {
   const { openSignIn } = useClerk();
   const { user } = useUser();
-  // console.log(user)
-  const isEdu = useMatch("/educator/*");
   const isCourseDetails = useMatch("/course/:courseId");
   const isHome = useMatch("/");
 
-  const [open, setOpen] = React.useState(false);
-  // console.log(children);
-  return (
-    <nav
-      className={`flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-gray-300 relative transition-none ${isCourseDetails || isHome ? "bg-blue-300/50" : "bg-white"}`}
-    >
-      {/* Logo */}
-      <Link to="/">
-        <img
-          src={assets.logo2}
-          alt=""
-          className="w-28 lg:w-32 coursor-pointer"
-        />
-      </Link>
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-      {/* Desktop Menu */}
-      <div className="hidden md:flex items-center gap-8">
-        {user && children}
-        {user ? (
-          <UserButton />
-        ) : (
-          <button
-            onClick={() => openSignIn()}
-            className="bg-blue-600 text-white px-5 py-2 rounded-full cursor-pointer "
-          >
-            Create Account
-          </button>
-        )}
-      </div>
-      <div className="sm:hidden flex items-center gap-4">
-        {user ? (
-          <UserButton />
-        ) : (
-          <button onClick={() => openSignIn()}>
-            <img src={assets.user_icon} alt="" />
-          </button>
-        )}
-        <button
-          onClick={() => (open ? setOpen(false) : setOpen(true))}
-          aria-label="Menu"
-        >
-          {/* Menu Icon SVG */}
-          <svg
-            width="21"
-            height="15"
-            viewBox="0 0 21 15"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="21" height="1.5" rx=".75" fill="#426287" />
-            <rect x="8" y="6" width="13" height="1.5" rx=".75" fill="#426287" />
-            <rect
-              x="6"
-              y="13"
-              width="15"
-              height="1.5"
-              rx=".75"
-              fill="#426287"
-            />
-          </svg>
-        </button>
-      </div>
-      {/* Mobile Menu */}
-      <div
-        className={`${open ? "flex" : "hidden"} absolute top-15 left-0 w-full bg-white shadow-md py-4 flex-col items-start gap-2 px-5 text-sm md:hidden`}
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  return (
+    <>
+      <nav
+        className={`flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 sticky top-0 z-40 transition-all duration-300 ${
+          isCourseDetails || isHome
+            ? "bg-linear-to-b from-35% from-white to-blue-200 backdrop-blur-md"
+            : "bg-white"
+        }`}
       >
-        {/* <Link to="/" className="block">
-          Home
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 group">
+          <img
+            src={assets.logo2}
+            alt="Edmiy Logo"
+            className="w-28 lg:w-32 transition-transform duration-300 group-hover:scale-105"
+          />
         </Link>
-        <Link to="/about" className="block">
-          About
-        </Link>
-        <Link to="/contact" className="block">
-          Contact
-        </Link>
-        <button className="cursor-pointer px-6 py-2 mt-2 bg-blue-500 hover:bg-blue-500 transition text-white rounded-full text-sm">
-          Login
-        </button> */}
-        {/* {children} */}
-        <button
-          onClick={() => openSignIn()}
-          className="bg-blue-600 text-white px-5 py-2 rounded-full cursor-pointer "
-        >
-          Create Account
-        </button>
+
+        {/* Desktop Menu */}
+        <div className="hidden md:flex items-center gap-8">
+          {user && <div className="flex items-center gap-6">{children}</div>}
+
+          {user ? (
+            <div className="flex items-center gap-4">
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          ) : (
+            <button
+              onClick={() => openSignIn()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full cursor-pointer font-medium transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2"
+            >
+              <UserPlus size={18} />
+              <span>Create Account</span>
+            </button>
+          )}
+        </div>
+
+        {/* Mobile Controls */}
+        <div className="md:hidden flex items-center gap-4">
+          {user && (
+            <div className="scale-110">
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          )}
+
+          <button
+            onClick={toggleMenu}
+            className="text-gray-700 hover:bg-gray-200 transition-colors"
+            aria-label="Toggle Menu"
+          >
+            {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300 md:hidden ${
+          isMenuOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        onClick={toggleMenu}
+      />
+
+      {/* Mobile Slide-over Menu */}
+      <div
+        className={`fixed top-0 right-0 h-full w-[280px] bg-white z-60 shadow-2xl transform transition-transform duration-500 ease-in-out md:hidden flex flex-col ${
+          isMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="p-6 flex items-center justify-between border-b border-gray-100">
+          <span className="font-bold text-xl text-blue-600">Menu</span>
+          <button
+            onClick={toggleMenu}
+            className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+          <MobileNavLink
+            to="/"
+            icon={<Home size={20} />}
+            label="Home"
+            onClick={toggleMenu}
+          />
+
+          {user ? (
+            <>
+              <MobileNavLink
+                to="/my-enrollments"
+                icon={<GraduationCap size={20} />}
+                label="My Enrollments"
+                onClick={toggleMenu}
+              />
+              <MobileNavLink
+                to="/wishlist"
+                icon={<Heart size={20} />}
+                label="Wishlist"
+                onClick={toggleMenu}
+              />
+              <MobileNavLink
+                to="/cart"
+                icon={<ShoppingCart size={20} />}
+                label="Cart"
+                onClick={toggleMenu}
+              />
+              <div className="pt-4 mt-4 border-t border-gray-100">
+                {/* Pass through children if they are links, or render educator dashboard specifically */}
+                <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Quick Actions
+                </div>
+                {children}
+              </div>
+            </>
+          ) : (
+            <div className="pt-4">
+              <button
+                onClick={() => {
+                  toggleMenu();
+                  openSignIn();
+                }}
+                className="w-full bg-blue-600 text-white p-4 rounded-xl font-semibold shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
+              >
+                <UserPlus size={20} />
+                Create Account
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-gray-100 text-center">
+          <img
+            src={assets.logo2}
+            alt="Logo"
+            className="w-24 mx-auto opacity-50"
+          />
+        </div>
       </div>
-    </nav>
+    </>
   );
 };
+
+const MobileNavLink = ({ to, icon, label, onClick }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className="flex items-center gap-4 p-4 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200"
+  >
+    <span className="text-gray-400 group-hover:text-blue-600">{icon}</span>
+    <span className="font-medium">{label}</span>
+  </Link>
+);
 
 export default Navbar;

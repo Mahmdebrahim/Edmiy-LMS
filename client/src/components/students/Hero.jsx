@@ -5,7 +5,7 @@ import { Star } from "lucide-react";
 
 function Hero() {
   return (
-    <div className="flex flex-col items-center justify-center w-full md:pt-26 pt-20 px-7 md:px-0 space-y-7 text-center bg-linear-to-b from-blue-300/50">
+    <div className="flex flex-col items-center justify-center w-full md:pt-26 pt-20 px-7 md:px-0 space-y-7 text-center bg-linear-to-b from-blue-200">
       <div className="flex items-center gap-1">
         <div className="flex  -space-x-3 pr-3">
           <img

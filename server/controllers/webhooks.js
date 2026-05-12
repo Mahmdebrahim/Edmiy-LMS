@@ -67,6 +67,7 @@ export const clerkWebhooks = async (req, res) => {
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const stripeWebhooks = async (req, res) => {
+
   const sig = req.headers["stripe-signature"];
 
   const rawBody =
@@ -205,3 +206,4 @@ export const stripeWebhooks = async (req, res) => {
 
   res.status(200).json({ success: true });
 };
+

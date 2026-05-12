@@ -199,7 +199,6 @@ function CourseDetails() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-6xl mb-4">😕</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             Course not found
           </h2>
@@ -342,7 +341,7 @@ function CourseDetails() {
   return (
     <>
       <div className="relative md:py-36 md:px-36 px-4 md:pt-25 pt-20">
-        <div className="absolute top-0 left-0 w-full h-2/5 -z-1 bg-linear-to-b from-blue-300/50"></div>
+        <div className="absolute top-0 left-0 w-full h-2/5 -z-1 bg-linear-to-b from-blue-200"></div>
 
         <button
           onClick={() => navigate("/course-list")}
@@ -631,7 +630,7 @@ function CourseDetails() {
           </div>
 
           {/* Desktop Card */}
-          <div className="hidden lg:block lg:sticky top-5 w-80 xl:w-96 z-10 rounded-xl overflow-hidden bg-white shadow-md shrink-0">
+          <div className="hidden lg:block lg:sticky top-25 w-80 xl:w-96 z-10 rounded-xl overflow-hidden bg-white shadow-md shrink-0">
             {playedData ? (
               <Youtube
                 videoId={playedData.videoId}
