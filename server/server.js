@@ -19,7 +19,7 @@ app.use(
   cors({
     origin: [
     "http://localhost:5173",
-    "https://edmiy-lms.vercel.app"
+    "https://edunoova-lms.vercel.app"
   ],
   credentials: true, 
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
