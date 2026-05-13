@@ -8,17 +8,16 @@ export default function Footer() {
         <div className="w-full max-w-7xl mx-auto">
           <div className="flex flex-wrap justify-between gap-y-12 lg:gap-x-8">
             <div className="w-full md:w-[45%] lg:w-[35%] flex flex-col items-center md:items-start text-center md:text-left">
-              <a href="https://prebuiltui.com">
+              <a href="https://edunova.com">
                 <img
                   className="h-8 w-auto"
                   src={assets.logoo}
-                  alt="PrebuiltUI Logo"
+                  alt="EduNova Logo"
                 />
               </a>
               <div className="w-full max-w-52 h-px mt-8 bg-linear-to-r from-black via-white/25 to-black"></div>
               <p className="text-sm text-white/60 mt-6 max-w-sm leading-relaxed">
-                PrebuiltUI is a growing collection of beautifully designed,
-                production-ready Tailwind CSS UI components.
+                EduNova is an online learning platform that offers a wide range of courses and resources to help you acquire new skills and knowledge.
               </p>
             </div>
 
@@ -115,7 +114,7 @@ export default function Footer() {
           <div className="w-full h-px mt-16 mb-4 bg-linear-to-r from-black via-white/25 to-black"></div>
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-white/60">© 2025 PrebuiltUI</p>
+            <p className="text-xs text-white/60">© 2025 EduNova</p>
             <div className="flex items-center gap-6">
               <a
                 href="#"

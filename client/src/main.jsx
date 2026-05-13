@@ -5,6 +5,8 @@ import App from "./App.jsx";
 import { AppProvider } from "./context/AppContext.jsx";
 import { ClerkProvider } from "@clerk/clerk-react";
 
+import { Analytics } from "@vercel/analytics/react";
+
 // Import your Publishable Key
 import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
@@ -29,6 +31,7 @@ createRoot(document.getElementById("root")).render(
         <PrimeReactProvider>
           <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
           <App />
+          <Analytics />
         </PrimeReactProvider>
       </AppProvider>
     </ClerkProvider>
